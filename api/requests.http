@@ -1,0 +1,38 @@
+
+POST http://localhost:8080/api/sea_battle_square/create-matrix
+Content-Type: application/json
+
+{
+  "range": 5
+}
+
+###
+
+POST http://localhost:8080/api/sea_battle_square/ship
+Content-Type: application/json
+
+{
+  "coordinates":"1A 2B,3C 3C,4A 4B"
+}
+
+###
+
+POST http://localhost:8080/api/sea_battle_square/shot
+Content-Type: application/json
+
+{
+  "сoord":"2B"
+}
+###
+
+POST http://localhost:8080/api/sea_battle_square/autoshooting
+
+###
+
+POST http://localhost:8080/api/sea_battle_square/clear
+
+###
+
+GET http://localhost:8080/api/sea_battle_square/state
+
+###
