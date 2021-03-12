@@ -38,7 +38,7 @@ func (s ShipReq) Parse(matrixRange int) (map[int]Ship, error) {
 func fillShips(coords [][2]int, matrixRange int) (map[int]Ship, error) {
 	res := make(map[int]Ship)
 
-	for i := 0; i < len(coords)/2; i = i + 2 {
+	for i := 0; i < len(coords); i = i + 2 {
 		x := coords[0]
 		y := coords[1]
 
