@@ -21,9 +21,9 @@ func (s ShotReq) Parse(matrixRange int) (x, y int, err error) {
 		return 0, 0, errors.New("недопустимые символы в запросе")
 	}
 
-	for key, value := range dict {
-		s.Coordinates = strings.ReplaceAll(s.Coordinates, key, value)
-	}
+	//for key, value := range dict {
+	//	s.Coordinates = strings.ReplaceAll(s.Coordinates, key, value)
+	//}
 
 	coordsStr := strings.Split(s.Coordinates, ":")
 

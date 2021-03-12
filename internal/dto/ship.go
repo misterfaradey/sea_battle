@@ -11,33 +11,14 @@ type ShipReq struct {
 	Coordinates string `json:"coordinates" form:"coordinates"`
 }
 
-var dict = map[string]string{
-	"A": ":1",
-	"B": ":2",
-	"C": ":3",
-	"D": ":4",
-	"E": ":5",
-	"F": ":6",
-	"G": ":7",
-	"H": ":8",
-	"I": ":9",
-	"J": ":10",
-	"K": ":11",
-	"L": ":12",
-	"M": ":13",
-	"N": ":14",
-	"O": ":15",
-	"P": ":16",
-	"Q": ":17",
-	"R": ":18",
-	"S": ":19",
-	"T": ":20",
-	"U": ":21",
-	"V": ":22",
-	"W": ":23",
-	"X": ":24",
-	"Y": ":25",
-	"Z": ":26",
+type Ship struct {
+	Name int
+	From [2]int
+	To   [2]int
+
+	//	количество живых клеток
+	HealthMax int
+	Health    int
 }
 
 func (s ShipReq) Parse(matrixRange int) (map[int]Ship, error) {
@@ -46,59 +27,30 @@ func (s ShipReq) Parse(matrixRange int) (map[int]Ship, error) {
 		return nil, errors.New("недопустимые символы в запросе")
 	}
 
-	for key, value := range dict {
-		s.Coordinates = strings.ReplaceAll(s.Coordinates, key, value)
+	coords, err := splitStr(s.Coordinates)
+	if err != nil {
+		return nil, err
 	}
 
-	shipsCoordsStr := strings.Split(s.Coordinates, ",")
+	return fillShips(coords, matrixRange)
+}
 
-	out := make(map[int]Ship)
+func fillShips(coords [][2]int, matrixRange int) (map[int]Ship, error) {
+	res := make(map[int]Ship)
 
-	for _, value := range shipsCoordsStr {
-		fromToStr := strings.Split(value, " ")
-		if len(fromToStr) != 2 {
-			return nil, errors.New("неверное количество координат для корабля")
-		}
+	for i := 0; i < len(coords)/2; i = i + 2 {
+		x := coords[0]
+		y := coords[1]
 
-		xStr := strings.Split(fromToStr[0], ":")
-		if len(xStr) != 2 {
-			return nil, errors.New("неверные данные")
-		}
-
-		yStr := strings.Split(fromToStr[1], ":")
-		if len(yStr) != 2 {
-			return nil, errors.New("неверные данные")
-		}
-
-		x1, err := strconv.Atoi(xStr[0])
-		if err != nil {
-			return nil, err
-		}
-
-		x2, err := strconv.Atoi(xStr[1])
-		if err != nil {
-			return nil, err
-		}
-
-		y1, err := strconv.Atoi(yStr[0])
-		if err != nil {
-			return nil, err
-		}
-
-		y2, err := strconv.Atoi(yStr[1])
-		if err != nil {
-			return nil, err
-		}
-
-		if x1 > matrixRange || x2 > matrixRange || y1 > matrixRange || y2 > matrixRange ||
-			x1 <= 0 || x2 <= 0 || y1 <= 0 || y2 <= 0 {
+		if x[0] >= matrixRange || x[1] >= matrixRange || y[0] >= matrixRange || y[1] >= matrixRange ||
+			x[0] < 0 || x[1] < 0 || y[0] < 0 || y[1] < 0 {
 			return nil, errors.New("координата находится вне поля")
 		}
 
 		var hor, vert int
 
-		hor = x1 - y1
-		vert = x2 - y2
+		hor = x[0] - y[0]
+		vert = x[1] - y[1]
 
 		if hor >= 0 {
 			hor++
@@ -114,24 +66,64 @@ func (s ShipReq) Parse(matrixRange int) (map[int]Ship, error) {
 
 		health := hor * vert
 
-		out[len(out)+1] = Ship{
-			Name:      len(out) + 1,
-			From:      [2]int{x1 - 1, x2 - 1},
-			To:        [2]int{y1 - 1, y2 - 1},
+		res[len(res)+1] = Ship{
+			Name:      len(res) + 1,
+			From:      x,
+			To:        y,
 			HealthMax: health,
 			Health:    health,
 		}
 	}
 
-	return out, nil
+	return res, nil
 }
 
-type Ship struct {
-	Name int
-	From [2]int
-	To   [2]int
+// 1B 2C,3D 5D
+func splitStr(in string) ([][2]int, error) {
 
-	//	количество живых клеток
-	HealthMax int
-	Health    int
+	shipsCoordsStr := strings.Split(in, ",")
+
+	res := make([][2]int, 0, len(shipsCoordsStr)*2)
+
+	for _, pairs := range shipsCoordsStr {
+
+		p := strings.Split(pairs, " ")
+		if len(p) != 2 {
+			return nil, errors.New("error pair parses")
+		}
+
+		head, err := getCoordinates(p[0])
+		if err != nil {
+			return nil, err
+		}
+		tail, err := getCoordinates(p[1])
+		if err != nil {
+			return nil, err
+		}
+
+		res = append(res, head, tail)
+	}
+
+	return res, nil
+}
+
+//26Z
+func getCoordinates(in string) (res [2]int, err error) {
+	if len(in) < 2 {
+		return res, errors.New("wrong len")
+	}
+
+	str := in[:len(in)-1]
+
+	res[0], err = strconv.Atoi(str)
+	if err != nil {
+		return res, err
+	}
+
+	res[1] = int(in[len(in)-1] - 'A' + 1)
+
+	res[0]--
+	res[1]--
+
+	return res, nil
 }
